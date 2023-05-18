@@ -11,11 +11,18 @@ The code within this repository, was initially built for our IWSHM 2023 paper. I
 
 > Daniel S. Brennan, Elizabeth J. Cross, Keith Worden. A comparison of structural similarity methodologies within Population-based Structural Health Monitoring, IWSHM 2023.
 
+## Installation
+You can install the repository using pip
+```
+pip install git+https://github.com/dsbrennan/ie-cf-reduction
+```
+
 ## Using the Reduction Rules
 To use the reduction rules code, simply call the static reduce_graph method within the CanonicalFormReduction class:
 
-```
-CanonicalFormReduction.reduce_graph(elements, relationships)
+```python
+from canonical_form_reduction import CanonicalFormReduction as cfr
+cfr.reduce_graph(elements, relationships)
 ```
 The method takes three arguments:
 * elements: a list of IE model element objects
