@@ -2,6 +2,16 @@ class CanonicalFormReduction:
 
     @staticmethod
     def _find_perfect_joint_edge(node: object, relationships: list):
+        """Find the perfect and joint edges for a given node
+
+        Parameters:
+            node: an IE model element
+            relationships: a list of IE model relationships
+
+        Returns:
+            list: element names which had a perfect relationship to the given node
+            list: element names which had a joint relationship to the given node
+        """
         # Find Perfect & Joint edges
         perfect_edges, joint_edges = [], []
         for edge in relationships:
@@ -22,6 +32,15 @@ class CanonicalFormReduction:
 
     @staticmethod
     def _find_joint_edge(node: object, relationships: list):
+        """Find the joint edges for a given node
+
+        Parameters:
+            node: an IE model element
+            relationships: a list of IE model relationships
+
+        Returns:
+            list: element names which had a joint relationship to the given node
+        """
         # Find Joint edges
         joint_edges = []
         for edge in relationships:
@@ -39,6 +58,16 @@ class CanonicalFormReduction:
 
     @staticmethod
     def _find_perfect_perfect_only_edge(node: object, relationships: list):
+        """Find only two perfect edges for a given node
+
+        Parameters:
+            node: an IE model element
+            relationships: a list of IE model relationships
+
+        Returns:
+            str: name of the element that is on the left perfect relationship to the given node
+            str: name of the element that is on the right perfect relationship to the given node    
+        """
         # Find Perfect Perfect edges
         perfect_edges = []
         for edge in relationships:
@@ -58,6 +87,17 @@ class CanonicalFormReduction:
 
     @staticmethod
     def _reduce_pjj_relationships(elements: list, relationships: list, debug: bool = False) -> tuple:
+        """Perform the PJJ relationship reduction on the graph
+
+        Parameters:
+            elements: a list of IE model elements
+            relationships: a list of IE model relationships
+            debug: output diagnostic information
+
+        Returns:
+            list: a list of IE model elements after the PJJ reduction
+            list: a list of IE model relationships after the PJJ reduction
+        """
         for node in elements:
             # Establise a node with at least 1 perfect edge and at least 1 joint edge
             perfect_edges, joint_edges = CanonicalFormReduction._find_perfect_joint_edge(node, relationships)
@@ -135,6 +175,17 @@ class CanonicalFormReduction:
 
     @staticmethod
     def _reduce_pp_relationships(elements: list, relationships: list, debug: bool = False) -> tuple:
+        """Perform the PP relationship reduction on the graph
+        
+        Parameters:
+            elements: a list of IE model elements
+            relationships: a list of IE model relationships
+            debug: output diagnostic information
+
+        Returns:
+            list: a list of IE model elements after the PP reduction
+            list: a list of IE model relationships after the PP reduction
+        """
         for node in elements:
             # Establise a node with only 2 perfect edges
             perfect_edge_left, perfect_edge_right = CanonicalFormReduction._find_perfect_perfect_only_edge(node, relationships)
@@ -186,6 +237,17 @@ class CanonicalFormReduction:
 
     @staticmethod
     def reduce_graph(elements: list, relationships: list, debug: bool = False) -> tuple:
+        """Perform CF reduction rules on the graph
+        
+        Parameters:
+            elements: a list of IE model elements
+            relationships: a list of IE model relationships
+            debug: output diagnostic information
+
+        Returns:
+            list: a list of IE model elements after the CF reduction rules
+            list: a list of IE model relationships after the CF reduction rules
+        """
         # PJJ Reduction
         if debug:
             print("PJJ Reduction")
