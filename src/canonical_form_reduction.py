@@ -38,8 +38,26 @@ class CanonicalFormReduction:
     
 
     @staticmethod
-    def reduce_graph(elements: list, relationships: list, debug=False):
-        # PJJ Reduction
+    def _find_perfect_perfect_only_edge(node: object, relationships: list):
+        # Find Perfect Perfect edges
+        perfect_edges = []
+        for edge in relationships:
+            for element in edge["elements"]:
+                if node["name"] == element["name"]:
+                    if edge["type"] != "perfect":
+                        return None, None
+                    else:
+                        for element_reference in edge["elements"]:
+                            if node["name"] == element_reference["name"]:
+                                continue
+                            else:
+                                perfect_edges.append(element_reference["name"])
+                    break
+        return (perfect_edges[0], perfect_edges[1]) if len(perfect_edges) == 2 else (None, None)
+                                
+
+    @staticmethod
+    def _reduce_pjj_relationships(elements: list, relationships: list, debug: bool = False) -> tuple:
         for node in elements:
             # Establise a node with at least 1 perfect edge and at least 1 joint edge
             perfect_edges, joint_edges = CanonicalFormReduction._find_perfect_joint_edge(node, relationships)
@@ -109,7 +127,70 @@ class CanonicalFormReduction:
                                                     print(f"Found Relationship to remove {edge['name']}")
                                                 relationships.remove(edge)
                                                 #Recursive Call
-                                                return CanonicalFormReduction.reduce_graph(elements, relationships, debug=debug)
+                                                return CanonicalFormReduction._reduce_pjj_relationships(elements, relationships, debug=debug)
                                 break
                         break
+        return elements, relationships 
+
+
+    @staticmethod
+    def _reduce_pp_relationships(elements: list, relationships: list, debug: bool = False) -> tuple:
+        for node in elements:
+            # Establise a node with only 2 perfect edges
+            perfect_edge_left, perfect_edge_right = CanonicalFormReduction._find_perfect_perfect_only_edge(node, relationships)
+            if perfect_edge_left == None or perfect_edge_right == None:
+                continue
+            if debug:
+                print(f"Origin Node {node['name']} Left Perfect Edges: {perfect_edge_left} Right Perfect Edge: {perfect_edge_right}")
+            # Find Left & Right Relationships
+            i, removed_count = 0, 0
+            while i < len(relationships):
+                edge = relationships[i]
+                if edge["type"] == "perfect":
+                    perfect_origin_found, perfect_destination_found = False, False
+                    for element in edge["elements"]:
+                        if node["name"] == element["name"]:
+                            perfect_origin_found = True
+                        elif perfect_edge_left == element["name"]:
+                            perfect_destination_found = True
+                        elif perfect_edge_right == element["name"]:
+                            perfect_destination_found = True
+                    if perfect_origin_found and perfect_destination_found:
+                        if debug:
+                            print(f"Found Relationship to remove {edge['name']}")
+                        relationships.remove(edge)
+                        removed_count += 1
+                        continue
+                if removed_count > 1:
+                    break
+                i += 1
+            # Establish new perfect relationship between N^left and N^right
+            if debug:
+                print(f"Creating relationship {perfect_edge_left}-{perfect_edge_right}")
+            relationships.append({
+                "name": f"{perfect_edge_left}-{perfect_edge_right}",
+                "type": "perfect",
+                "description": "Relationship introduced via the PP CF reduction rule",
+                "elements":[
+                    {"name": perfect_edge_left},
+                    {"name": perfect_edge_right}
+                ]
+            })
+            # Remove Node
+            if debug:
+                print(f"Removing element {node['name']}")
+            elements.remove(node)
+            return CanonicalFormReduction._reduce_pp_relationships(elements, relationships, debug=debug)
         return elements, relationships
+    
+
+    @staticmethod
+    def reduce_graph(elements: list, relationships: list, debug: bool = False) -> tuple:
+        # PJJ Reduction
+        if debug:
+            print("PJJ Reduction")
+        elements, relationships = CanonicalFormReduction._reduce_pjj_relationships(elements, relationships, debug)
+        # PP Reduction
+        if debug:
+            print("PP Reduction")
+        return CanonicalFormReduction._reduce_pp_relationships(elements, relationships, debug)
